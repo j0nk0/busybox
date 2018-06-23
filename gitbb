@@ -1,0 +1,37 @@
+#!/bin/bash
+
+#BusyBox: The Swiss Army Knife of Embedded Linux
+
+mkdir -p -v /tmp/busyboxtmp/toolchain_android-ndk
+cd /tmp/busyboxtmp/toolchain_android-ndk
+ wget https://dl.google.com/android/repository/android-ndk-r17b-linux-x86_64.zip
+ unzip android-ndk-r17b-linux-x86_64.zip
+
+echo "Building toolchain..."
+android-ndk-r17b/build/tools/make_standalone_toolchain.py --arch=arm --api 21
+echo "Done"
+ if ! [ -f arm-linux-androideabi.tar.bz2 ];then
+  echo "Error, cannot find: arm-linux-androideabi.tar.bz2
+  exit
+ else
+  rm --verbose android-ndk-r17b-linux-x86_64.zip
+  rm --verbose -r android-ndk-r17b
+  tar xjvf arm-linux-androideabi.tar.bz2
+ fi
+
+ sed -i s'/#define __ANDROID_API__ __ANDROID_API_FUTURE__/#define __ANDROID_API__ 21/g' arm-linux-androideabi/sysroot/usr/include/android/api-level.h
+
+
+#Setup busybox config
+ export PATH=$PATH:/tmp/busyboxtmp/toolchain_android-ndk/arm-linux-androideabi/bin
+#Check installed
+ arm-linux-androideabi-gcc -v
+echo "Prep is done, time to make"
+
+cd /tmp/busyboxtmp/busybox
+make android_defconfig
+
+echo 'If you want to configure further, launch "make menuconfig", if needed change Cross Compiler prefix in Busybox Settings'
+  echo 'Finally launch: "make"'
+  
+ 
